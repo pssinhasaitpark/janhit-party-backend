@@ -1,17 +1,56 @@
 import Document from "../models/documentModel.js";
 import { successResponse, errorResponse } from "../utils/responseHandler.js";
-import fs from "fs";
+import cloudinary from "../configs/cloudinaryConfig.js";
+import streamifier from "streamifier";
+
+// 🔹 Upload document to Cloudinary
+const uploadToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.buffer) {
+      return reject(new Error("Invalid file: buffer is missing"));
+    }
+
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "documents",
+        resource_type: "raw",
+        type: "upload",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      },
+    );
+
+    streamifier.createReadStream(file.buffer).pipe(stream);
+  });
+};
+
+// 🔹 Delete from Cloudinary
+const deleteFromCloudinary = async (public_id) => {
+  if (public_id) {
+    await cloudinary.uploader.destroy(public_id, {
+      resource_type: "raw",
+    });
+  }
+};
 
 export const createDocument = async (req, res) => {
   try {
-    const { title, description } = req.body;
-    if (!title || !req.file)
+    const { title, description, category } = req.body;
+
+    if (!title || !req.file) {
       return errorResponse(res, 400, "Title and file required");
+    }
+
+    const result = await uploadToCloudinary(req.file);
 
     const doc = await Document.create({
       title,
       description,
-      url: `/uploads/documents/${req.file.filename}`,
+      category,
+      url: result.secure_url,
+      public_id: result.public_id,
     });
 
     return successResponse(res, 201, "Document uploaded successfully", doc);
@@ -20,25 +59,14 @@ export const createDocument = async (req, res) => {
   }
 };
 
-// export const getAllDocuments = async (req, res) => {
-//   try {
-//     const docs = await Document.find().sort({ createdAt: -1 });
-//     return successResponse(res, 200, "Documents fetched successfully", docs);
-//   } catch (error) {
-//     return errorResponse(res, 500, "Fetch documents failed", error.message);
-//   }
-// };
-
 export const getAllDocuments = async (req, res) => {
   try {
     const { category, search, page = 1, limit = 10 } = req.query;
 
     let filter = {};
 
-    // Filter by category if provided
     if (category) filter.category = category;
 
-    // Search by title or description
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -46,7 +74,6 @@ export const getAllDocuments = async (req, res) => {
       ];
     }
 
-    // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const total = await Document.countDocuments(filter);
 
@@ -66,10 +93,15 @@ export const getAllDocuments = async (req, res) => {
     return errorResponse(res, 500, "Fetch documents failed", error.message);
   }
 };
+
 export const getDocumentById = async (req, res) => {
   try {
     const doc = await Document.findById(req.params.id);
-    if (!doc) return errorResponse(res, 404, "Document not found");
+
+    if (!doc) {
+      return errorResponse(res, 404, "Document not found");
+    }
+
     return successResponse(res, 200, "Document fetched successfully", doc);
   } catch (error) {
     return errorResponse(res, 500, "Fetch document failed", error.message);
@@ -79,13 +111,15 @@ export const getDocumentById = async (req, res) => {
 export const deleteDocument = async (req, res) => {
   try {
     const doc = await Document.findById(req.params.id);
-    if (!doc) return errorResponse(res, 404, "Document not found");
 
-    // Delete the file from local storage
-    const filePath = `.${doc.url}`;
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (!doc) {
+      return errorResponse(res, 404, "Document not found");
+    }
+
+    await deleteFromCloudinary(doc.public_id);
 
     await doc.deleteOne();
+
     return successResponse(res, 200, "Document deleted successfully");
   } catch (error) {
     return errorResponse(res, 500, "Delete document failed", error.message);
