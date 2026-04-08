@@ -6,6 +6,7 @@ import mediaRoutes from "./mediaRoutes.js";
 import documentRoutes from "./documentRoutes.js";
 import newsTickerRoutes from "./newsTickerRoutes.js";
 import memberRoutes from "./memberRoutes.js";
+import contactRoutes from "./contactRoutes.js";
 
 const allRoutes = (app) => {
   app.use("/api/v1/auth", authRoutes);
@@ -16,6 +17,7 @@ const allRoutes = (app) => {
   app.use("/api/v1/documents", documentRoutes);
   app.use("/api/v1/news-ticker", newsTickerRoutes);
   app.use("/api/v1/members", memberRoutes);
+  app.use("/api/v1/contacts", contactRoutes);
 
   //admin routes
   app.use("/api/v1/admin/events", eventRoutes);
@@ -25,6 +27,7 @@ const allRoutes = (app) => {
   app.use("/api/v1/admin/documents", documentRoutes);
   app.use("/api/v1/admin/news-ticker", newsTickerRoutes);
   app.use("/api/v1/admin/members", memberRoutes);
+  app.use("/api/v1/admin/contacts", contactRoutes);
 };
 
 export default allRoutes;

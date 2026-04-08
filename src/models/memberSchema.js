@@ -1,15 +1,83 @@
+// import mongoose from "mongoose";
+
+// const memberSchema = new mongoose.Schema(
+//   {
+//     name: { type: String, required: true, trim: true },
+
+//     email: {
+//       type: String,
+//       required: true,
+//       unique: true,
+//       lowercase: true,
+//     },
+
+//     mobile: { type: String, required: true },
+
+//     city: { type: String, required: true, trim: true },
+
+//     address: { type: String, trim: true },
+
+//     age: {
+//       type: Number,
+//       min: [1, "Age must be greater than 0"],
+//       max: [120, "Age must be realistic"],
+//     },
+
+//     occupation: { type: String, trim: true },
+
+//     agreedToPolicy: { type: Boolean, default: true },
+
+//     approved: { type: Boolean, default: false },
+//   },
+//   { timestamps: true },
+// );
+
+// const Member = mongoose.model("Member", memberSchema);
+// export default Member;
+
 import mongoose from "mongoose";
 
 const memberSchema = new mongoose.Schema(
   {
+    memberId: { type: String, unique: true, required: true }, // new field
+
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
+
     mobile: { type: String, required: true },
+
     city: { type: String, required: true, trim: true },
-    agreedToPolicy: { type: Boolean, default: false },
+
+    address: { type: String, trim: true },
+
+    age: {
+      type: Number,
+      min: [1, "Age must be greater than 0"],
+      max: [120, "Age must be realistic"],
+    },
+
+    occupation: { type: String, trim: true },
+
+    agreedToPolicy: { type: Boolean, default: true },
+
+    approved: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
+
+memberSchema.pre("validate", async function () {
+  if (!this.memberId) {
+    // Format: JP-<timestamp>-<random 3 digits>
+    const random = Math.floor(100 + Math.random() * 900); // 3-digit random number
+    this.memberId = `JP-${Date.now()}-${random}`;
+  }
+});
 
 const Member = mongoose.model("Member", memberSchema);
 export default Member;

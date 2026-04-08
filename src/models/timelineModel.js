@@ -16,7 +16,6 @@ const timelineSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false },
 );
 
-// Automatically update status based on date
 timelineSchema.pre("save", function () {
   if (this.date < new Date()) this.status = "past";
   else this.status = "upcoming";
