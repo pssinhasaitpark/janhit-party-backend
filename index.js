@@ -44,10 +44,27 @@ import connectDB from "./src/configs/dbConnection.js";
 dotenv.config();
 const app = express();
 
-// Middleware
-app.use(cors());
+// Correct CORS setup
+const allowedOrigins = ["https://janhit-party-web.vercel.app"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  }),
+);
+
+// Middleware for parsing JSON
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
+
 // Basic route
 app.get("/", (req, res) => {
   res.send("Welcome to Janhit Party Backend!");
