@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const documentSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
-    description: { type: String, trim: true },
+    title: { type: String, required: true },
+    description: { type: String },
+    category: { type: String },
     url: { type: String, required: true },
-    fileType: { type: String, default: "pdf" },
+    public_id: { type: String, required: true },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true },
 );
 
-const Document = mongoose.model("Document", documentSchema);
-export default Document;
+export default mongoose.model("Document", documentSchema);

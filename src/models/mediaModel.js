@@ -10,6 +10,8 @@ const mediaSchema = new mongoose.Schema(
     title: { type: String, trim: true },
     newspaperName: { type: String, trim: true },
     url: { type: String, required: true },
+    publicId: { type: String, trim: true },
+    resourceType: { type: String, trim: true },
   },
   { timestamps: true, versionKey: false },
 );
