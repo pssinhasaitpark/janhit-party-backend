@@ -1,39 +1,10 @@
 import Event from "../models/eventModel.js";
 import { successResponse, errorResponse } from "../utils/responseHandler.js";
-import cloudinary from "../configs/cloudinaryConfig.js";
-import streamifier from "streamifier";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/mediaHandler.js";
 
-// 🔹 Upload to Cloudinary using buffer
-const uploadToCloudinary = (file) => {
-  return new Promise((resolve, reject) => {
-    if (!file || !file.buffer) {
-      return reject(new Error("Invalid file: buffer is missing"));
-    }
-
-    const stream = cloudinary.uploader.upload_stream(
-      { folder: "events", resource_type: "auto" },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      },
-    );
-
-    streamifier.createReadStream(file.buffer).pipe(stream);
-  });
-};
-
-// 🔹 Delete media from Cloudinary
-const deleteFromCloudinary = async (media) => {
-  for (const file of media) {
-    if (file.public_id) {
-      await cloudinary.uploader.destroy(file.public_id, {
-        resource_type: file.type === "video" ? "video" : "image",
-      });
-    }
-  }
-};
-
-// 🔹 Determine event status: past / current / upcoming
 const determineEventStatus = (eventDate) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -46,29 +17,24 @@ const determineEventStatus = (eventDate) => {
   else return "upcoming";
 };
 
-// ================= CREATE EVENT =================
 export const createEvent = async (req, res) => {
   try {
     const { name, location, theme, date, time } = req.body;
-
     if (!name || !location || !date || !time) {
       return errorResponse(res, 400, "All required fields must be provided");
     }
 
-    // Upload media to Cloudinary
     let media = [];
-    if (req.files && req.files.length > 0) {
+    if (req.files?.length) {
       const uploads = await Promise.all(
-        req.files.map(async (file) => {
-          const result = await uploadToCloudinary(file);
-          return {
-            url: result.secure_url,
-            public_id: result.public_id,
-            type: result.resource_type === "video" ? "video" : "image",
-          };
-        }),
+        req.files.map((file) => uploadToCloudinary(file, "events")),
       );
-      media = uploads;
+
+      media = uploads.map((result) => ({
+        url: result.secure_url,
+        public_id: result.public_id,
+        type: result.resource_type === "video" ? "video" : "image",
+      }));
     }
 
     const status = determineEventStatus(date);
@@ -82,21 +48,18 @@ export const createEvent = async (req, res) => {
       media,
       status,
     });
-
     return successResponse(res, 201, "Event created successfully", event);
   } catch (error) {
     return errorResponse(res, 500, "Create event failed", error.message);
   }
 };
 
-// ================= GET ALL EVENTS =================
 export const getAllEvents = async (req, res) => {
   try {
     const { status, search, page = 1, limit = 10 } = req.query;
+    const filter = {};
 
-    let filter = {};
     if (status) filter.status = status;
-
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -125,7 +88,6 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
-// ================= GET EVENT BY ID =================
 export const getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -137,36 +99,27 @@ export const getEventById = async (req, res) => {
   }
 };
 
-// ================= UPDATE EVENT =================
 export const updateEvent = async (req, res) => {
   try {
     const { name, location, theme, date, time } = req.body;
     const event = await Event.findById(req.params.id);
     if (!event) return errorResponse(res, 404, "Event not found");
 
-    let updateData = { name, location, theme, date, time };
+    const updateData = { name, location, theme, date, time };
+    if (date) updateData.status = determineEventStatus(date);
 
-    // Update status if date changes
-    if (date) {
-      updateData.status = determineEventStatus(date);
-    }
-
-    // Replace media if new files are uploaded
-    if (req.files && req.files.length > 0) {
+    if (req.files?.length) {
       if (event.media?.length) await deleteFromCloudinary(event.media);
 
       const uploads = await Promise.all(
-        req.files.map(async (file) => {
-          const result = await uploadToCloudinary(file);
-          return {
-            url: result.secure_url,
-            public_id: result.public_id,
-            type: result.resource_type === "video" ? "video" : "image",
-          };
-        }),
+        req.files.map((file) => uploadToCloudinary(file, "events")),
       );
 
-      updateData.media = uploads;
+      updateData.media = uploads.map((result) => ({
+        url: result.secure_url,
+        public_id: result.public_id,
+        type: result.resource_type === "video" ? "video" : "image",
+      }));
     }
 
     const updatedEvent = await Event.findByIdAndUpdate(
@@ -174,7 +127,6 @@ export const updateEvent = async (req, res) => {
       updateData,
       { new: true, runValidators: true },
     );
-
     return successResponse(
       res,
       200,
@@ -186,15 +138,14 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-// ================= DELETE EVENT =================
 export const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return errorResponse(res, 404, "Event not found");
 
     if (event.media?.length) await deleteFromCloudinary(event.media);
-
     await event.deleteOne();
+
     return successResponse(res, 200, "Event deleted successfully");
   } catch (error) {
     return errorResponse(res, 500, "Delete event failed", error.message);
