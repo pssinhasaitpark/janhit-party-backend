@@ -51,71 +51,35 @@ export const createMember = async (req, res) => {
   }
 };
 
-// export const approveMember = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const member = await Member.findById(id);
-
-//     if (!member) {
-//       return errorResponse(res, 404, "Member not found");
-//     }
-
-//     if (member.approved) {
-//       return errorResponse(res, 400, "Member already approved");
-//     }
-
-//     member.approved = true;
-//     await member.save();
-
-//     await sendWelcomeEmail(member);
-
-//     return successResponse(
-//       res,
-//       200,
-//       "Member approved and welcome email sent",
-//       member,
-//     );
-//   } catch (error) {
-//     return errorResponse(res, 500, "Failed to approve member", error.message);
-//   }
-// };
-
 export const approveMember = async (req, res) => {
   try {
     const { id } = req.params;
-
     const member = await Member.findById(id);
 
     if (!member) {
       return errorResponse(res, 404, "Member not found");
     }
 
-    member.approved = !member.approved;
+    if (member.approved) {
+      return errorResponse(res, 400, "Member already approved");
+    }
+
+    member.approved = true;
     await member.save();
 
-    if (member.approved) {
-      try {
-        await sendWelcomeEmail(member);
-      } catch (err) {
-        console.error("Email failed:", err.message);
-      }
-    }
+    await sendWelcomeEmail(member);
 
     return successResponse(
       res,
       200,
-      `Member ${member.approved ? "approved" : "unapproved"} successfully`,
+      "Member approved and welcome email sent",
       member,
     );
   } catch (error) {
-    return errorResponse(
-      res,
-      500,
-      "Failed to update member status",
-      error.message,
-    );
+    return errorResponse(res, 500, "Failed to approve member", error.message);
   }
 };
+
 export const getAllMembers = async (req, res) => {
   try {
     const { approved, city, occupation, search } = req.query;

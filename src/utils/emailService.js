@@ -38,39 +38,6 @@ transporter.verify((error, success) => {
   }
 });
 
-/**
- * Send welcome email to new members
- * @param {string} toEmail - Recipient email
- * @param {string} name - Recipient name
- */
-// export const sendWelcomeEmail = async (toEmail, name) => {
-//   const mailOptions = {
-//     from: smtpFrom,
-//     to: toEmail,
-//     subject: "Welcome to Janhit Party Membership",
-//     html: `
-//       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-//         <h2 style="color: #0066cc;">Welcome to Janhit Party, ${name}!</h2>
-//         <p>Thank you for registering as a member of Janhit Party.</p>
-//         <p>We appreciate your support and look forward to working together for a better future.</p>
-//         <br />
-//         <p>Best regards,<br/>Janhit Party Team</p>
-//         <hr />
-//         <p style="font-size: 12px; color: #666;">This is an automated message. Please do not reply.</p>
-//       </div>
-//     `,
-//   };
-
-//   try {
-//     const info = await transporter.sendMail(mailOptions);
-//     console.log(`Email sent to ${toEmail}: ${info.messageId}`);
-//     return info;
-//   } catch (error) {
-//     console.error("Failed to send email:", error);
-//     throw new Error("Email sending failed");
-//   }
-// };
-
 export const sendWelcomeEmail = async (member) => {
   const pdfBuffer = await generateMemberPDF(member);
   // console.log(("pdf buffer:", pdfBuffer));
