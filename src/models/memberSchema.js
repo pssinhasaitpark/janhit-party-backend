@@ -39,7 +39,7 @@ import mongoose from "mongoose";
 
 const memberSchema = new mongoose.Schema(
   {
-    memberId: { type: String, unique: true, required: true }, // new field
+    memberId: { type: String, unique: true, required: true },
 
     name: { type: String, required: true, trim: true },
 
@@ -53,6 +53,7 @@ const memberSchema = new mongoose.Schema(
     mobile: { type: String, required: true },
 
     city: { type: String, required: true, trim: true },
+    state: { type: String, required: true, trim: true },
 
     address: { type: String, trim: true },
 
@@ -61,6 +62,8 @@ const memberSchema = new mongoose.Schema(
       min: [1, "Age must be greater than 0"],
       max: [120, "Age must be realistic"],
     },
+
+    gender: { type: String, trim: true, enum: ["male", "female", "other"] },
 
     occupation: { type: String, trim: true },
 
@@ -71,10 +74,10 @@ const memberSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-memberSchema.pre("validate", async function () {
+memberSchema.pre("validate", function () {
   if (!this.memberId) {
     // Format: JP-<timestamp>-<random 3 digits>
-    const random = Math.floor(100 + Math.random() * 900); // 3-digit random number
+    const random = Math.floor(100 + Math.random() * 900);
     this.memberId = `JP-${Date.now()}-${random}`;
   }
 });

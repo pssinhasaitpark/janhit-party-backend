@@ -9,13 +9,15 @@ export const createMember = async (req, res) => {
       email,
       mobile,
       city,
+      state,
       address,
       age,
+      gender,
       occupation,
       agreedToPolicy,
     } = req.body;
 
-    if (!name || !email || !mobile || !city || !agreedToPolicy) {
+    if (!name || !email || !mobile || !city || !state || !gender) {
       return errorResponse(res, 400, "All required fields must be provided");
     }
 
@@ -29,8 +31,10 @@ export const createMember = async (req, res) => {
       email,
       mobile,
       city,
+      state,
       address,
       age,
+      gender,
       occupation,
       agreedToPolicy,
       approved: false,
@@ -123,8 +127,10 @@ export const updateMember = async (req, res) => {
       email,
       mobile,
       city,
+      state,
       address,
       age,
+      gender,
       occupation,
       agreedToPolicy,
     } = req.body;
@@ -134,8 +140,10 @@ export const updateMember = async (req, res) => {
       email,
       mobile,
       city,
+      state,
       address,
       age,
+      gender,
       occupation,
       agreedToPolicy,
     };
