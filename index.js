@@ -1,16 +1,21 @@
 // import express from "express";
 // import dotenv from "dotenv";
 // import cors from "cors";
-// import path from "path";
+// import morgan from "morgan";
 // import allRoutes from "./src/routes/index.js";
 // import connectDB from "./src/configs/dbConnection.js";
 
 // dotenv.config();
 // const app = express();
 
-// const allowedOrigins = [ "https://janhit-party-web.vercel.app",
-// "http://192.168.0.137:5173",
-// "http://192.168.0.137:5174",];
+// const allowedOrigins = [
+//   "https://janhit-party-web.vercel.app",
+//   "https://janhit-party-admin.vercel.app",
+//   "http://192.168.0.137:5173",
+//   "http://192.168.0.137:5174",
+//   "http://localhost:5173",
+//   "http://localhost:5174",
+// ];
 // app.use(
 //   cors({
 //     origin: function (origin, callback) {
@@ -26,6 +31,9 @@
 // );
 // app.use(express.json({ limit: "100mb" }));
 // app.use(express.urlencoded({ limit: "100mb", extended: true }));
+// app.use(
+//   morgan(":method :url :status :res[content-length] - :response-time ms"),
+// );
 // app.get("/", (req, res) => {
 //   res.send("Welcome to Janhit Party Backend!");
 // });
@@ -53,6 +61,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import morgan from "morgan";
 import allRoutes from "./src/routes/index.js";
 import connectDB from "./src/configs/dbConnection.js";
 
@@ -62,6 +71,7 @@ const app = express();
 // Correct CORS setup
 const allowedOrigins = [
   "https://janhit-party-web.vercel.app",
+  "https://janhit-party-admin.vercel.app",
   "http://192.168.0.137:5173",
   "http://192.168.0.137:5174",
   "http://localhost:5173",
@@ -84,6 +94,10 @@ app.use(
 // Middleware for parsing JSON
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
+
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms"),
+);
 
 // Basic route
 app.get("/", (req, res) => {
