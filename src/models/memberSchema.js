@@ -71,7 +71,7 @@ const memberSchema = new mongoose.Schema(
 
     approved: { type: Boolean, default: false },
   },
-  { timestamps: true },
+  { timestamps: true, versionKey: false },
 );
 
 memberSchema.pre("validate", function () {
