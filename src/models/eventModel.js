@@ -118,7 +118,7 @@ const eventSchema = new mongoose.Schema(
 // AUTO UPDATE STATUS BASED ON DATE
 eventSchema.pre("save", function () {
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // normalize to midnight
+  today.setHours(0, 0, 0, 0);
   const eventDate = new Date(this.date);
   eventDate.setHours(0, 0, 0, 0);
 

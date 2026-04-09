@@ -9,7 +9,7 @@ const contactSchema = new mongoose.Schema(
 
     isResolved: { type: Boolean, default: false },
   },
-  { timestamps: true },
+  { timestamps: true, versionKey: false },
 );
 
 const Contact = mongoose.model("Contact", contactSchema);
