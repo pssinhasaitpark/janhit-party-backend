@@ -64,6 +64,8 @@ const allowedOrigins = [
   "https://janhit-party-web.vercel.app",
   "http://192.168.0.137:5173",
   "http://192.168.0.137:5174",
+  "http://localhost:5173",
+  "http://localhost:5174",
 ];
 app.use(
   cors({
