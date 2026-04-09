@@ -6,7 +6,7 @@ import {
   getMemberById,
   updateMember,
   deleteMember,
-  approveMember, // <-- New
+  approveMember,
 } from "../controllers/memberController.js";
 import { authMiddleware } from "../middlewares/authmiddleware.js";
 import { authorizeRoles } from "../middlewares/roleMiddleware.js";
