@@ -15,6 +15,7 @@
 //   "http://192.168.0.137:5174",
 //   "http://localhost:5173",
 //   "http://localhost:5174",
+//   "https://janhitparty.com",
 // ];
 // app.use(
 //   cors({
@@ -76,6 +77,7 @@ const allowedOrigins = [
   "http://192.168.0.137:5174",
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://janhitparty.com",
 ];
 app.use(
   cors({
